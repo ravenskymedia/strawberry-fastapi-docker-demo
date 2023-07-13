@@ -1,0 +1,77 @@
+
+!!!
+Basic Docker Container with PostgreSQL DB
+
+Docker setup reference:
+ https://dev.to/andre347/how-to-easily-create-a-postgres-database-in-docker-4moj
+
+!!!
+
+1) Docker Image
+
+a) Create a Dockerfile and add the following:
+	- booksandauthors.sql must be saved in same directory
+
+	FROM postgres
+	ENV POSTGRES_PASSWORD hello123
+	ENV POSTGRES_USER mbroms
+	ENV POSTGRES_DB booksandauthors
+	COPY booksandauthors.sql /docker-entrypoint-initdb.d/
+
+
+b) Run this command to create the PostgreSQL Image in Docker:
+	- This command takes the Dockerfile and creates an image
+
+	> docker build -t book-auth-postgres-db ./
+
+	- Test that our image has been created by listing all images
+
+	> docker images -a
+
+
+ 2) Docker Container creation and run by the following:
+
+	> docker run --name books-authors-container -p 5432:5432 -d  book-auth-postgres-db
+
+
+THIS IS WHAT EACH PART OF THE COMMAND REPRESENTS:
+
+-- name   :: names the container
+
+-p   ::  maps the container port to the computer's port (i.e. external port)
+
+-d   :: runs detached from command window (frees up the window to continue using)
+
+
+TEST OUR DB
+-------------
+
+* CONNNECT: docker exec -it  <container-name> psql -U <dataBaseUserName> <dataBaseName>
+
+  > docker exec -it books-authors-container psql -U mbroms booksandauthors
+
+* DUMP/RESTORE DB:
+
+https://davejansen.com/how-to-dump-and-restore-a-postgresql-database-from-a-docker-container/
+
+
+* DUMP: docker exec -i <pg_container_name> /bin/bash -c "PGPASSWORD=<pg_password> pg_dump --username <pg_username> <database_name>" > </desired/path/on/your/machine/dump.sql>
+
+  > docker exec -i books-authors-container /bin/bash -c "PGPASSWORD=hello123 pg_dump --username mbroms booksandauthors" > "C:\Users\owner\Documents\Dev\Python\strawberry-fastapi-docker\booksandauthors.sql"
+
+* RESTORE: docker exec -i <pg_container_name> /bin/bash -c "PGPASSWORD=<pg_password> psql --username <pg_username> <database_name>" < </path/on/your/machine/dump.sql>
+
+  > docker exec -i books-authors-container /bin/bash -c "PGPASSWORD=hello123 psql --username mbroms booksandauthors" < "C:\Users\owner\Documents\Dev\Python\strawberry-fastapi-docker\booksandauthors.sql"
+
+
+
+sqlalchemy connection in models.py
+----------------------------------
+
+user = "mbroms"
+pw = "hello123"
+path = "127.0.0.1:5432"  #IP and port of docker database
+db = "booksandauthors"
+engine = create_async_engine("postgresql+asyncpg://{u}:{pw}@{path}/{db}".format(u=user, pw=pw, path=path, db=db))
+
+engine = create_async_engine("postgresql+asyncpg://prizkalla:hello@db/books")

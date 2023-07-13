@@ -1,0 +1,97 @@
+
+Strawberry:
+https://strawberry.rocks/docs
+
+Original project reference:
+ https://blog.logrocket.com/using-graphql-strawberry-fastapi-next-js#defining-queries-mutations
+
+Docker setup reference:
+ https://dev.to/andre347/how-to-easily-create-a-postgres-database-in-docker-4moj
+
+
+Steps:
+
+1: Set up Docker container and database - refer to DOCKER NOTES.txt
+
+2: Create the Database Tables by executing 'models.py':
+  - This is optional but can be done instead of using COPY <db> argument in Dockerfile to create DB
+
+	> python models.py
+
+
+3. Run project:
+
+	> uvicorn app:app --reload
+
+
+3> GraphQl:
+
+http://localhost:8000/graphql
+
+
+Queries and Mutations
+-----------------------
+
+1) Mutations
+
+mutation Author {
+  addAuthor(name: "Eric Idle") {
+    ... on Author {
+      id
+      name
+    }
+    ... on AuthorExists{
+      message
+    }
+  }
+}
+
+
+mutation Book {
+  addBook(
+    name: "How To Be Funny",
+    authorName: "Eric Idle"
+  ) {
+    ... on Book {
+      id
+      name
+    }
+  }
+}
+
+
+2) Queries
+
+query Books {
+  books {
+    id
+    name
+  }
+}
+
+>>> returns list of books in JSON format
+
+
+{
+  authors {
+    id
+    name
+  }
+}
+
+>> returns list of authors:
+
+ {
+  "data": {
+    "authors": [
+      {
+        "id": "2",
+        "name": "Eric Idle"
+      },
+      {
+        "id": "1",
+        "name": "Yasoob"
+      }
+    ]
+  }
+}
